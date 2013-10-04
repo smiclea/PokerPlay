@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:components="views.components.*"
+		 creationComplete="creationCompleteHandler(event)">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:Rect id="tableSprite" 
+			width="{p1Box.width * 3 + 50 * 2}"
+			height="{p1Box.height * 2 + 50}">
+		<s:stroke>
+			<s:SolidColorStroke color="black" />
+		</s:stroke>
+	</s:Rect>
+	
+	<s:VGroup id="cardsContainer" 
+			  x="{tableSprite.x  + tableSprite.width / 2 - cardsContainer.width/2}"
+			  y="{tableSprite.y  + tableSprite.height / 2 - cardsContainer.height/2}"
+			  gap="20">
+		
+		<s:HGroup verticalAlign="middle">
+			<s:Label id="largestLabel" text="Table cards:" />
+			
+			<s:TextInput width="90" 
+						 text="@{presenter.tableCards}"
+						 change="presenter.updateTableCards()"/>
+		</s:HGroup>
+		
+		<s:HGroup verticalAlign="middle">
+			<s:Label text="Your cards:" width="{largestLabel.width}" />
+			
+			<s:TextInput width="45" 
+						 text="@{presenter.userCards}"
+						 change="presenter.updateUserCards()"/>
+		</s:HGroup>
+	</s:VGroup>
+	
+	<!--top row player boxes-->
+	<components:PlayerBox id="p1Box" 
+						  x="{tableSprite.x}"
+						  y="{tableSprite.y - p1Box.height - 10}"/>
+	
+	<components:PlayerBox id="p2Box" 
+						  x="{p1Box.x + p1Box.width + 50}"
+						  y="{p1Box.y}"/>
+	
+	<components:PlayerBox id="p3Box" 
+						  x="{p2Box.x + p1Box.width + 50}"
+						  y="{p1Box.y}"/>
+	
+	<!--left column player boxes-->
+	<components:PlayerBox id="p4Box" 
+						  x="{tableSprite.width + 10}"
+						  y="{tableSprite.y}"/>
+	
+	<components:PlayerBox id="p5Box" 
+						  x="{p4Box.x}"
+						  y="{p4Box.y + p4Box.height + 50}"/>
+	
+	<!--bottom row player boxes-->
+	<components:PlayerBox id="p8Box" 
+						  x="{tableSprite.x}"
+						  y="{tableSprite.y + tableSprite.height + 10}"/>
+	
+	<components:PlayerBox id="p7Box" 
+						  x="{p8Box.x + p8Box.width + 50}"
+						  y="{p8Box.y}"/>
+	
+	<components:PlayerBox id="p6Box" 
+						  x="{p7Box.x + p8Box.width + 50}"
+						  y="{p7Box.y}"/>
+	
+	<!--left column player boxes-->
+	<components:PlayerBox id="p10Box" 
+						  x="{tableSprite.x - p10Box.width - 10}"
+						  y="{tableSprite.y}"/>
+	
+	<components:PlayerBox id="p9Box" 
+						  x="{p10Box.x}"
+						  y="{p10Box.y + p10Box.height + 50}"/>
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import models.GameModel;
+			import models.events.PlayerEvent;
+			import models.vo.PlayerVO;
+			
+			import presenters.TablePresenter;
+			
+			private var _presenter :TablePresenter;
+			
+			[Bindable]
+			public function get presenter():TablePresenter
+			{
+				if (!_presenter)
+					_presenter = new TablePresenter();
+				
+				return _presenter;
+			}
+			
+			public function set presenter (value :TablePresenter) :void
+			{
+				_presenter = value;
+			}
+
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				GameModel.getInstance().initGame();
+				
+				renderBoxes();
+			}
+			
+			private function renderBoxes() :void
+			{
+				for (var i :int = 0; i < GameModel.getInstance().players.length; i++)
+				{
+					var playerBox :PlayerBox = this["p"+(i+1)+"Box"] as PlayerBox
+					playerBox.player = GameModel.getInstance().players[i] as PlayerVO;
+					
+					playerBox.addEventListener(PlayerEvent.PLAYER_ENABLE, function (evt :PlayerEvent) :void
+					{
+						GameModel.getInstance().resetGame();
+					});
+					
+					playerBox.addEventListener(PlayerEvent.PLAYER_DEALER, function (evt :PlayerEvent) :void
+					{
+						GameModel.getInstance().setDealer(evt.player);
+					});
+					
+					playerBox.addEventListener(PlayerEvent.PlAYER_USER, function (evt :PlayerEvent) :void
+					{
+						GameModel.getInstance().setUser(evt.player);
+					});
+					
+					playerBox.addEventListener(PlayerEvent.PlAYER_ACTION, function (evt :PlayerEvent) :void
+					{
+						GameModel.getInstance().updatePlayerAction();
+					});
+				}
+			}
+			
+		]]>
+	</fx:Script>
+</s:Group>
