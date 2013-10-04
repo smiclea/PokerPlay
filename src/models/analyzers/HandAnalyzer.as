@@ -506,7 +506,6 @@ package models.analyzers
 				}
 			}
 			
-			
 			if (pairCard && pairCard.rank == tableCards[0].rank)
 				return true;
 			
