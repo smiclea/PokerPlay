@@ -3,15 +3,21 @@
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
 		 xmlns:mx="library://ns.adobe.com/flex/mx"
 		 xmlns:components="views.components.*"
-		 creationComplete="creationCompleteHandler(event)">
+		 creationComplete="creationCompleteHandler(event)"
+		 width="100%"
+		 height="100%">
 	
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
 	
 	<s:Rect id="tableSprite" 
-			width="{p1Box.width * 3 + 50 * 2}"
-			height="{p1Box.height * 2 + 50}">
+			width="{p4Box.x - p9Box.x - p10Box.width - TABLE_BOX_GAP * 2 - 100}"
+			height="{p7Box.y - p10Box.height - TABLE_BOX_GAP * 2 - 40}"
+			x="{p9Box.width + TABLE_BOX_GAP + 50}"
+			y="{p10Box.height + TABLE_BOX_GAP + 20}"
+			radiusX="100"
+			radiusY="200">
 		<s:stroke>
 			<s:SolidColorStroke color="black" />
 		</s:stroke>
@@ -39,49 +45,47 @@
 		</s:HGroup>
 	</s:VGroup>
 	
+	<!--use as starting point for other boxes since it's the top leftmost-->
+	<components:PlayerBox id="p10Box" 
+						  x="{p10Box.width / 2}"
+						  y="{p10Box.height}"/>
+	
 	<!--top row player boxes-->
 	<components:PlayerBox id="p1Box" 
-						  x="{tableSprite.x}"
-						  y="{tableSprite.y - p1Box.height - 10}"/>
+						  x="{p10Box.x + p10Box.width + BOX_GAP}"
+						  y="{0}"/>
 	
 	<components:PlayerBox id="p2Box" 
-						  x="{p1Box.x + p1Box.width + 50}"
-						  y="{p1Box.y}"/>
+						  x="{p10Box.x + p10Box.width * 2 + BOX_GAP * 2}"
+						  y="{0}"/>
 	
 	<components:PlayerBox id="p3Box" 
-						  x="{p2Box.x + p1Box.width + 50}"
-						  y="{p1Box.y}"/>
+						  x="{p10Box.x + p10Box.width * 3 + BOX_GAP * 3}"
+						  y="{p10Box.y}"/>
 	
-	<!--left column player boxes-->
 	<components:PlayerBox id="p4Box" 
-						  x="{tableSprite.width + 10}"
-						  y="{tableSprite.y}"/>
+						  x="{p10Box.x + p10Box.width * 3 + BOX_GAP * 3 + p10Box.width / 2}"
+						  y="{p10Box.y + p10Box.height + BOX_GAP}"/>
 	
 	<components:PlayerBox id="p5Box" 
-						  x="{p4Box.x}"
-						  y="{p4Box.y + p4Box.height + 50}"/>
-	
-	<!--bottom row player boxes-->
-	<components:PlayerBox id="p8Box" 
-						  x="{tableSprite.x}"
-						  y="{tableSprite.y + tableSprite.height + 10}"/>
-	
-	<components:PlayerBox id="p7Box" 
-						  x="{p8Box.x + p8Box.width + 50}"
-						  y="{p8Box.y}"/>
+						  x="{p3Box.x}"
+						  y="{p10Box.y + p10Box.height * 2 + BOX_GAP * 2}"/>
 	
 	<components:PlayerBox id="p6Box" 
-						  x="{p7Box.x + p8Box.width + 50}"
-						  y="{p7Box.y}"/>
+						  x="{p2Box.x}"
+						  y="{p10Box.y + p10Box.height * 3 + BOX_GAP * 2}"/>
 	
-	<!--left column player boxes-->
-	<components:PlayerBox id="p10Box" 
-						  x="{tableSprite.x - p10Box.width - 10}"
-						  y="{tableSprite.y}"/>
+	<components:PlayerBox id="p7Box" 
+						  x="{p1Box.x}"
+						  y="{p6Box.y}"/>
+	
+	<components:PlayerBox id="p8Box" 
+						  x="{p10Box.x}"
+						  y="{p5Box.y}"/>
 	
 	<components:PlayerBox id="p9Box" 
-						  x="{p10Box.x}"
-						  y="{p10Box.y + p10Box.height + 50}"/>
+						  x="{0}"
+						  y="{p4Box.y}"/>
 	
 	<fx:Script>
 		<![CDATA[
@@ -94,6 +98,9 @@
 			import presenters.TablePresenter;
 			
 			private var _presenter :TablePresenter;
+			
+			private const BOX_GAP :int = 50;
+			private const TABLE_BOX_GAP :int = 20;
 			
 			[Bindable]
 			public function get presenter():TablePresenter
