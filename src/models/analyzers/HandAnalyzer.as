@@ -81,10 +81,56 @@ package models.analyzers
 			if (isStraight(userCards, tableCards, false, true))
 				return GUTSHOT;
 			
+			// overcard
 			if (isOvercard(userCards, tableCards))
 				return OVERCARD;
 			
 			return "";
+		}
+		
+		static public function isMadeHand(handType :String) :Boolean
+		{
+			if (isMonsterHand(handType))
+				return true;
+			
+			var cases :Object = {
+				"topPair": true,
+				"overPair": true
+			};
+			
+			return cases[handType];
+		}
+		
+		static public function isMonsterHand(handType :String) :Boolean
+		{
+			var cases :Object = {
+				"twoPair": true,
+				"trips" :true,
+				"straight": true,
+				"flush": true,
+				"fullHouse" :true,
+				"quads": true,
+				"straightFlush": true,
+				"royalFlush": true
+			};
+			
+			return cases[handType];
+		}
+		
+		static public function isDraw(handType :String) :Boolean
+		{
+			var cases :Object = {
+				"monsterDraw": true,
+				"OESD" :true,
+				"flushDraw": true,
+				"doubleGutshot": true,
+				"gutshotOvercard" :true,
+				"gutshot": true,
+				"straightFlush": true,
+				"royalFlush": true
+			};
+			
+			return cases[handType];
 		}
 		
 		static private function isGutshotOvercard(userCards :Array, tableCards :Array) :Boolean
@@ -225,7 +271,7 @@ package models.analyzers
 				}
 			}
 			
-			if (sameSuitCount >= 3)
+			if (sameSuitCount >= 4)
 				return true;
 			
 			return false;

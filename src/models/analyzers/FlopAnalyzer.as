@@ -1,6 +1,7 @@
 package models.analyzers
 {
 	import models.constants.Actions;
+	import models.constants.GamePhases;
 
 	public class FlopAnalyzer extends AbstractAnalyzer
 	{
@@ -10,11 +11,11 @@ package models.analyzers
 		{
 		}
 		
-		static public function analyzeCards(userCards :Array, tableCards :Array, players :Array, raisesLog :Array) :String
+		static public function analyzeCards(userCards :Array, tableCards :Array, players :Array, actionsLog :Array) :String
 		{
 			var handType :String = HandAnalyzer.analyze(userCards, tableCards);
 			
-			if (isMonsterHand(handType))
+			if (HandAnalyzer.isMonsterHand(handType))
 			{
 				log("You have a monster hand. You should CAP. Hand type: " + handType);
 				return Actions.RAISE;
@@ -29,6 +30,8 @@ package models.analyzers
 			log("You have: " + handType);
 			
 			var numRaisesAfterUser :int = getNumRaisesAfterUser(players);
+			var numPlayers :int = numAvailablePlayers(players);
+			var hasInitiative :Boolean = playerHasInitiative(actionsLog, GamePhases.PRE_FLOP);
 			
 			if (handType == HandAnalyzer.TOP_PAIR || handType == HandAnalyzer.OVER_PAIR
 				|| handType == HandAnalyzer.FLUSH_DRAW || handType == HandAnalyzer.OESD 
@@ -51,29 +54,21 @@ package models.analyzers
 			
 			if (handType == HandAnalyzer.GUTSHOT || handType == HandAnalyzer.OVERCARD)
 			{
-				if (players[0].isUser)
+				if (noActionBeforeUser(players) && hasInitiative && numPlayers <= 3)
 				{
-					if (raisesLog[raisesLog.length-1].isUser && players.length <= 3)
-					{
-						log("You raised before flop and there are at most two opponents");
-						return Actions.RAISE;
-					}
-					else
-					{
-						log("You didn't raise before flop or there are more than two opponents");
-						return Actions.FOLD;
-					}
-				}
+					log("You raised before flop, there are at most two opponents and no action before you.");
+					return Actions.RAISE;
+				} 
 				else
 				{
 					log("10 times - Call a bet or raise if the pot is at least 10 times the size of bet");
-					return Actions.FOLD;
+					return Actions.READ_LOG;
 				}
 			}
 			
 			if (handType == "")
 			{
-				if (raisesLog[raisesLog.length-1].isUser && players.length <= 3)
+				if (hasInitiative && numPlayers <= 3)
 				{
 					log("Bluff. You were the last to raise and you are against two opponents at most.");
 					return Actions.RAISE;
@@ -85,53 +80,7 @@ package models.analyzers
 				}
 			}
 			
-			return null;
-		}
-		
-		static private function didUserRaiseBeforeFlop(players :Array, raisesLog :Array) :Boolean
-		{
-			
-			
-			return false;
-		}
-		
-		static private function isMonsterHand(type :String) :Boolean
-		{
-			var cases :Object = {
-				"twoPair": true,
-				"trips" :true,
-				"straight": true,
-				"flush": true,
-				"fullHouse" :true,
-				"quads": true,
-				"straightFlush": true,
-				"royalFlush": true
-			};
-			
-			return cases[type];
-		}
-		
-		static private function getNumRaisesAfterUser(players :Array) :int
-		{
-			var userI :int = -1;
-			var count :int = 0;
-			var i:int;
-			
-			for (i = 0; i < players.length; i++)
-			{
-				if (players[i].isUser)
-					userI = i;
-				
-				if (userI > -1 && i > userI)
-					if (players[i].action == Actions.RAISE)
-						count++;
-			}
-			
-			for (i = 0; i < userI; i++)
-				if (players[i].action == Actions.RAISE && players[i].oldAction)
-					count++;
-			
-			return count;
+			return "NO ACTION FOUND";
 		}
 		
 	}

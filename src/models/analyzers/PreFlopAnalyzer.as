@@ -14,7 +14,7 @@ package models.analyzers
 		static private const SPECULATIVE_HAND :String = "speculativeHand";
 		static private const MIXED_HAND :String = "mixedHand";
 		
-		static public function analyzeHand(userCards :Array, position :int, players :Array, raisePos: int) :String
+		static public function analyzeCards(userCards :Array, position :int, players :Array, raisePos: int) :String
 		{
 			var handStrength :String = handStrength(userCards);
 			
@@ -88,74 +88,74 @@ package models.analyzers
 		
 		static private function getAction(handStrength :String, position :int, players :Array, raisePos :int, userCards :Array) :String
 		{
-			var actionSum :String = ActionAnalyzer.getActionsSummary(players, raisePos);
-			var postionGroup :String = PositionAnalyzer.positionGroup(position, players);
+			var actionSum :String = PreFlopActionAnalyzer.getActionsSummary(players, raisePos);
+			var postionGroup :String = PreFlopPositionAnalyzer.positionGroup(position, players);
 			
 			logData.addItemAt("Hand strength: " + handStrength + ", Players action: " + actionSum + ", Position: " + postionGroup, 0);
 			
 			if (handStrength == STRONG_HAND)
 			{
-				if (actionSum == ActionAnalyzer.ALL_FOLD)
+				if (actionSum == PreFlopActionAnalyzer.ALL_FOLD)
 					return Actions.RAISE;
 				
-				if (actionSum == ActionAnalyzer.ONE_CALL_BB)
+				if (actionSum == PreFlopActionAnalyzer.ONE_CALL_BB)
 					return Actions.RAISE;
 				
-				if (actionSum == ActionAnalyzer.TWO_MORE_CALL_BB)
+				if (actionSum == PreFlopActionAnalyzer.TWO_MORE_CALL_BB)
 					return Actions.RAISE;
 				
-				if (actionSum == ActionAnalyzer.ONE_RAISE_ALL_FOLD)
+				if (actionSum == PreFlopActionAnalyzer.ONE_RAISE_ALL_FOLD)
 				{
-					if (postionGroup == PositionAnalyzer.EARLY)
+					if (postionGroup == PreFlopPositionAnalyzer.EARLY)
 						return Actions.FOLD;
 					else
 						return Actions.RAISE;
 				}
 				
-				if (actionSum == ActionAnalyzer.ONE_RAISE_ONE_MORE_CALL)
+				if (actionSum == PreFlopActionAnalyzer.ONE_RAISE_ONE_MORE_CALL)
 					return Actions.CALL;
 			}
 			
 			if (handStrength == MEDIOCRE_HAND)
 			{
-				if (actionSum == ActionAnalyzer.ALL_FOLD)
+				if (actionSum == PreFlopActionAnalyzer.ALL_FOLD)
 				{
-					if (postionGroup == PositionAnalyzer.EARLY)
+					if (postionGroup == PreFlopPositionAnalyzer.EARLY)
 						return Actions.FOLD;
 					else
 						return Actions.RAISE;
 				}
 				
-				if (actionSum == ActionAnalyzer.ONE_CALL_BB)
+				if (actionSum == PreFlopActionAnalyzer.ONE_CALL_BB)
 				{
-					if (postionGroup == PositionAnalyzer.EARLY)
+					if (postionGroup == PreFlopPositionAnalyzer.EARLY)
 						return Actions.FOLD;
 					else
 						return Actions.RAISE;
 				}
 				
-				if (actionSum == ActionAnalyzer.TWO_MORE_CALL_BB)
+				if (actionSum == PreFlopActionAnalyzer.TWO_MORE_CALL_BB)
 				{
-					if (postionGroup == PositionAnalyzer.EARLY)
+					if (postionGroup == PreFlopPositionAnalyzer.EARLY)
 						return Actions.FOLD;
 					else
 						return Actions.RAISE;
 				}
 				
-				if (actionSum == ActionAnalyzer.ONE_RAISE_ALL_FOLD)
+				if (actionSum == PreFlopActionAnalyzer.ONE_RAISE_ALL_FOLD)
 				{
-					if (postionGroup == PositionAnalyzer.BB)
+					if (postionGroup == PreFlopPositionAnalyzer.BB)
 						return Actions.CALL;
 					else
 						return Actions.FOLD;
 				}
 				
-				if (actionSum == ActionAnalyzer.ONE_RAISE_ONE_MORE_CALL)
+				if (actionSum == PreFlopActionAnalyzer.ONE_RAISE_ONE_MORE_CALL)
 				{
 					var card1 :CardVO = userCards[0] as CardVO;
 					var card2 :CardVO = userCards[1] as CardVO;
 					
-					if (postionGroup == PositionAnalyzer.BB
+					if (postionGroup == PreFlopPositionAnalyzer.BB
 						|| (card1.suit == card2.suit && Cards.areOfRanks(card1.rank, card2.rank, "K", "Q")))
 						return Actions.CALL;
 					else
@@ -165,78 +165,78 @@ package models.analyzers
 			
 			if (handStrength == SPECULATIVE_HAND)
 			{
-				if (actionSum == ActionAnalyzer.ALL_FOLD)
+				if (actionSum == PreFlopActionAnalyzer.ALL_FOLD)
 				{
-					if (postionGroup == PositionAnalyzer.EARLY || postionGroup == PositionAnalyzer.MIDDLE)
+					if (postionGroup == PreFlopPositionAnalyzer.EARLY || postionGroup == PreFlopPositionAnalyzer.MIDDLE)
 						return Actions.FOLD;
 					else
 						return Actions.RAISE;
 				}
 				
-				if (actionSum == ActionAnalyzer.ONE_CALL_BB)
+				if (actionSum == PreFlopActionAnalyzer.ONE_CALL_BB)
 				{
-					if (postionGroup == PositionAnalyzer.EARLY || postionGroup == PositionAnalyzer.MIDDLE)
+					if (postionGroup == PreFlopPositionAnalyzer.EARLY || postionGroup == PreFlopPositionAnalyzer.MIDDLE)
 						return Actions.FOLD;
 					
-					if (postionGroup == PositionAnalyzer.LATE || postionGroup == PositionAnalyzer.SB)
+					if (postionGroup == PreFlopPositionAnalyzer.LATE || postionGroup == PreFlopPositionAnalyzer.SB)
 						return Actions.CALL;
 					
 					return Actions.CHECK;
 				}
 				
-				if (actionSum == ActionAnalyzer.TWO_MORE_CALL_BB)
+				if (actionSum == PreFlopActionAnalyzer.TWO_MORE_CALL_BB)
 				{
-					if (postionGroup == PositionAnalyzer.BB)
+					if (postionGroup == PreFlopPositionAnalyzer.BB)
 						return Actions.CHECK;
 					
 					return Actions.CALL;
 				}
 				
-				if (actionSum == ActionAnalyzer.ONE_RAISE_ALL_FOLD)
+				if (actionSum == PreFlopActionAnalyzer.ONE_RAISE_ALL_FOLD)
 				{
-					if (postionGroup == PositionAnalyzer.BB)
+					if (postionGroup == PreFlopPositionAnalyzer.BB)
 						return Actions.CALL;
 					
 					return Actions.FOLD;
 				}
 				
-				if (actionSum == ActionAnalyzer.ONE_RAISE_ONE_MORE_CALL)
+				if (actionSum == PreFlopActionAnalyzer.ONE_RAISE_ONE_MORE_CALL)
 					return Actions.CALL;
 			}
 			
 			if (handStrength == MIXED_HAND)
 			{
-				if (actionSum == ActionAnalyzer.ALL_FOLD)
+				if (actionSum == PreFlopActionAnalyzer.ALL_FOLD)
 				{
-					if (postionGroup == PositionAnalyzer.EARLY || postionGroup == PositionAnalyzer.MIDDLE)
+					if (postionGroup == PreFlopPositionAnalyzer.EARLY || postionGroup == PreFlopPositionAnalyzer.MIDDLE)
 						return Actions.FOLD;
 					
 					return Actions.RAISE;
 				}
 				
-				if (actionSum == ActionAnalyzer.ONE_CALL_BB)
+				if (actionSum == PreFlopActionAnalyzer.ONE_CALL_BB)
 				{
-					if (postionGroup == PositionAnalyzer.EARLY || postionGroup == PositionAnalyzer.MIDDLE || postionGroup == PositionAnalyzer.LATE)
+					if (postionGroup == PreFlopPositionAnalyzer.EARLY || postionGroup == PreFlopPositionAnalyzer.MIDDLE || postionGroup == PreFlopPositionAnalyzer.LATE)
 						return Actions.FOLD;
 					
-					if (postionGroup == PositionAnalyzer.SB)
+					if (postionGroup == PreFlopPositionAnalyzer.SB)
 						return Actions.CALL;
 					
 					return Actions.CHECK;
 				}
 				
-				if (actionSum == ActionAnalyzer.TWO_MORE_CALL_BB)
+				if (actionSum == PreFlopActionAnalyzer.TWO_MORE_CALL_BB)
 				{
-					if (postionGroup == PositionAnalyzer.EARLY || postionGroup == PositionAnalyzer.MIDDLE)
+					if (postionGroup == PreFlopPositionAnalyzer.EARLY || postionGroup == PreFlopPositionAnalyzer.MIDDLE)
 						return Actions.FOLD;
 					
-					if (postionGroup == PositionAnalyzer.LATE || postionGroup == PositionAnalyzer.SB)
+					if (postionGroup == PreFlopPositionAnalyzer.LATE || postionGroup == PreFlopPositionAnalyzer.SB)
 						return Actions.CALL;
 					
 					return Actions.CHECK;
 				}
 				
-				if (actionSum == ActionAnalyzer.ONE_RAISE_ALL_FOLD || actionSum == ActionAnalyzer.ONE_RAISE_ONE_MORE_CALL)
+				if (actionSum == PreFlopActionAnalyzer.ONE_RAISE_ALL_FOLD || actionSum == PreFlopActionAnalyzer.ONE_RAISE_ONE_MORE_CALL)
 					return Actions.FOLD;
 			}
 			

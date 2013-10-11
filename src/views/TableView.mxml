@@ -92,6 +92,7 @@
 			import mx.events.FlexEvent;
 			
 			import models.GameModel;
+			import models.events.GameEvent;
 			import models.events.PlayerEvent;
 			import models.vo.PlayerVO;
 			
@@ -119,6 +120,12 @@
 			protected function creationCompleteHandler(event:FlexEvent):void
 			{
 				GameModel.getInstance().initGame();
+				
+				GameModel.getInstance().addEventListener(GameEvent.NEW_GAME, function (e :GameEvent) :void
+				{
+					presenter.tableCards = "";
+					presenter.userCards = "";
+				});
 				
 				renderBoxes();
 			}

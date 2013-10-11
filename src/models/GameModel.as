@@ -3,11 +3,18 @@ package models
 	import flash.events.EventDispatcher;
 	
 	import models.analyzers.FlopAnalyzer;
+	import models.analyzers.HandAnalyzer;
 	import models.analyzers.PreFlopAnalyzer;
+	import models.analyzers.RiverAnalyzer;
+	import models.analyzers.TurnAnalyzer;
 	import models.constants.Actions;
 	import models.constants.GamePhases;
+	import models.events.GameEvent;
+	import models.vo.ActionLogVO;
 	import models.vo.PlayerVO;
 
+	[Event(name="newGame", type="models.events.GameEvent")]
+	
 	[Bindable]
 	public class GameModel extends EventDispatcher
 	{
@@ -30,7 +37,7 @@ package models
 		private var i :int;
 		private var player :PlayerVO;
 		
-		private var raisesLog :Array = [];
+		private var actionsLog :Array = [];
 		
 		public function GameModel()
 		{
@@ -69,6 +76,8 @@ package models
 				}
 				else
 					(players[i] as PlayerVO).isDealer = false;
+				
+				players[i].enabled = true;
 			}
 			
 			updatePosition();
@@ -83,6 +92,37 @@ package models
 			
 			initActions(true);
 			updateActions();
+		}
+		
+		public function newGame() :void
+		{
+			currentPos = 0;
+			message = "New game! Game phase: " + gamePhase;
+			
+			increaseDealerPosition();
+			
+			dispatchEvent(new GameEvent(GameEvent.NEW_GAME));
+		}
+		
+		private function increaseDealerPosition() :void
+		{
+			var id :int = -1;
+			
+			for (var i :int = 0; i < players.length; i++)
+			{
+				player = players[i] as PlayerVO;
+				
+				if (player.isDealer)
+				{
+					if (i == players.length - 1)
+						id = 0;
+					else
+						id = i+1;
+					
+					setDealer(players[id] as PlayerVO);
+					break;
+				}
+			}
 		}
 		
 		private function initActions(isPreflop :Boolean = false) :void
@@ -140,7 +180,10 @@ package models
 			}
 			
 			if (gamePhase != GamePhases.PRE_FLOP && !areRaises)
+			{
 				player.checkEnabled = true;
+				player.callEnabled = false;
+			}
 			
 			if (player.action == Actions.BB && !areRaises)
 			{
@@ -156,6 +199,21 @@ package models
 				recommendPreFlopAction();
 			else if (gamePhase == GamePhases.FLOP)
 				recommendFlopAction();
+			else if (gamePhase == GamePhases.TURN)
+				recommendTurnAction();
+			else if (gamePhase == GamePhases.RIVER)
+				recommendRiverAction();
+		}
+		
+		private function recommendPreFlopAction() :void
+		{
+			if (!userCards || userCards.length != 2)
+			{
+				message = "No valid cards enterd!";
+				return;
+			}
+			
+			message = "You should: " + PreFlopAnalyzer.analyzeCards(userCards, currentPos, posPlayers, raisePos).toUpperCase();
 		}
 		
 		private function recommendFlopAction() :void
@@ -166,7 +224,29 @@ package models
 				return;
 			}
 			
-			message = "You should: " + FlopAnalyzer.analyzeCards(userCards, tableCards, posPlayers, raisesLog).toUpperCase();
+			message = "You should: " + FlopAnalyzer.analyzeCards(userCards, tableCards, posPlayers, actionsLog).toUpperCase();
+		}
+		
+		private function recommendTurnAction() :void
+		{
+			if (!userCards || userCards.length != 2 || !tableCards || tableCards.length != 4)
+			{
+				message = "No valid cards enterd!";
+				return;
+			}
+			
+			message = "You should: " + TurnAnalyzer.analyzeCards(userCards, tableCards, posPlayers, actionsLog).toUpperCase();
+		}
+		
+		private function recommendRiverAction() :void
+		{
+			if (!userCards || userCards.length != 2 || !tableCards || tableCards.length != 5)
+			{
+				message = "No valid cards enterd!";
+				return;
+			}
+			
+			message = "You should: " + RiverAnalyzer.analyzeCards(userCards, tableCards, posPlayers, actionsLog).toUpperCase();
 		}
 		
 		private function disableAllActions() :void
@@ -177,22 +257,6 @@ package models
 				
 				player.toggleAllActions(false);
 			}
-		}
-		
-		private function recommendPreFlopAction() :void
-		{
-			if (!userCards || userCards.length != 2)
-			{
-				message = "No user cards detected!";
-				return;
-			}
-			
-			message = "The best action is: " + PreFlopAnalyzer.analyzeHand(userCards, currentPos, posPlayers, raisePos).toUpperCase();
-		}
-		
-		public function analyzeFlop() :void
-		{
-			//FlopAnalyzer.analyzeCards(userCards, tableCards, posPlayers);
 		}
 		
 		public function setUser(player :PlayerVO) :void
@@ -210,11 +274,15 @@ package models
 		{
 			player = posPlayers[currentPos];
 			
+			var actionLog :ActionLogVO = new ActionLogVO(player.action, player, gamePhase);
+			
+			if (player.isUser && gamePhase != GamePhases.PRE_FLOP)
+				actionLog.handType = HandAnalyzer.analyze(userCards, tableCards);
+			
+			actionsLog.push(actionLog);
+			
 			if (player.action == Actions.RAISE)
-			{
 				raisePos = currentPos;
-				raisesLog.push(player);
-			}
 			
 			currentPos++;
 			
@@ -284,9 +352,19 @@ package models
 		{
 			if (gamePhase == GamePhases.PRE_FLOP)
 				gamePhase = GamePhases.FLOP;
+			else if (gamePhase == GamePhases.FLOP)
+				gamePhase = GamePhases.TURN;
+			else if (gamePhase == GamePhases.TURN)
+				gamePhase = GamePhases.RIVER;
+			else if (gamePhase == GamePhases.RIVER)
+			{
+				gamePhase = GamePhases.PRE_FLOP;
+				newGame();
+				return;
+			}
 			
 			currentPos = 0;
-			message = "New game phase: " + gamePhase;;
+			message = "New game phase: " + gamePhase;
 			
 			removeFoldedPlayers();
 			

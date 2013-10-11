@@ -20,20 +20,20 @@
 			  horizontalAlign="center"
 			  gap="20">
 		
+		<s:HGroup width="100%">
+			<s:Button label="Recommend"
+					  click="GameModel.getInstance().recommendAction()"/>
+			
+			<s:Button label="New game"
+					  click="GameModel.getInstance().newGame()"/>
+		</s:HGroup>
+		
 		<views:TableView />
 		
 		<s:Label text="{GameModel.getInstance().message}"
-				 fontSize="30"/>
+				 fontSize="20"/>
 		
-		<s:HGroup>
-			<s:Button label="New recommendation"
-					  click="GameModel.getInstance().recommendAction()"/>
-			
-			<s:Button label="Analyze flop"
-					  click="GameModel.getInstance().analyzeFlop()"/>
-		</s:HGroup>
-		
-		<s:List dataProvider="{AbstractAnalyzer.logData}" 
+		<s:List dataProvider="{InfoLog.logData}" 
 				width="100%"
 				height="100"/>
 		
@@ -42,7 +42,7 @@
 	<fx:Script>
 		<![CDATA[
 			import models.GameModel;
-			import models.analyzers.AbstractAnalyzer;
+			import models.InfoLog;
 		]]>
 	</fx:Script>
 </s:WindowedApplication>

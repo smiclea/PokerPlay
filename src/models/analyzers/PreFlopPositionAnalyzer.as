@@ -1,6 +1,6 @@
 package models.analyzers
 {
-	public class PositionAnalyzer
+	public class PreFlopPositionAnalyzer
 	{
 		static public const SB :String = "sb";
 		static public const BB :String = "bb";
@@ -47,7 +47,7 @@ package models.analyzers
 			}
 		];
 		
-		public function PositionAnalyzer()
+		public function PreFlopPositionAnalyzer()
 		{
 		}
 		

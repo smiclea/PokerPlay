@@ -3,8 +3,9 @@ package models.analyzers
 	import models.GameModel;
 	import models.constants.Actions;
 	import models.vo.PlayerVO;
+	import models.InfoLog;
 
-	public class ActionAnalyzer extends AbstractAnalyzer
+	public class PreFlopActionAnalyzer extends InfoLog
 	{
 		static public const ALL_FOLD :String = "allFold";
 		static public const ONE_CALL_BB :String = "oneCallsBB";
@@ -14,7 +15,7 @@ package models.analyzers
 		static public const NO_ACTION :String = "noAction";
 		
 		
-		public function ActionAnalyzer()
+		public function PreFlopActionAnalyzer()
 		{
 		}
 		
@@ -135,22 +136,5 @@ package models.analyzers
 			
 			return totals;
 		}
-		
-		/*static public function getNumFolds() :int
-		{
-			var result :int = 0;
-			var players :Array = GameModel.getInstance().players;
-			
-			for (var i :int = 0; i < players.length; i++)
-			{
-				var player :PlayerVO = (players[i] as PlayerVO);
-				
-				if (player.action == Actions.FOLD)
-					result++;
-			}
-			
-			
-			return result;		
-		}*/
 	}
 }

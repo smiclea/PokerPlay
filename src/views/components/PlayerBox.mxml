@@ -41,11 +41,11 @@
 								height="15" 
 								width="45" />
 					
-					<!--<s:Label text="{player.action.toUpperCase()}"
-							 fontSize="10"/>-->
-					
-					<s:Label text="{player.playerId}"
+					<s:Label text="{player.action.toUpperCase()}"
 							 fontSize="10"/>
+					
+					<!--<s:Label text="{player.playerId}"
+							 fontSize="10"/>-->
 				</s:HGroup>
 				
 				<s:VGroup enabled="{player.enabled}">

@@ -1,32 +1,107 @@
 package models.analyzers
 {
-	import mx.collections.ArrayCollection;
+	import models.InfoLog;
+	import models.constants.Actions;
+	import models.vo.ActionLogVO;
+	import models.vo.PlayerVO;
 
-	[Bindable]
-	public class AbstractAnalyzer
+	public class AbstractAnalyzer extends InfoLog
 	{
-		static private var _log :ArrayCollection; 
-		
-		public static function get logData():ArrayCollection
-		{
-			if (!_log)
-				_log = new ArrayCollection();
-			
-			return _log;
-		}
-		
-		public static function set logData(value:ArrayCollection):void
-		{
-			_log = value;
-		}
-		
 		public function AbstractAnalyzer()
 		{
 		}
 		
-		static public function log(text :String) :void
+		static protected function getNumRaisesAfterUser(players :Array) :int
 		{
-			logData.addItemAt(text, 0);
+			var userI :int = -1;
+			var count :int = 0;
+			var i:int;
+			
+			for (i = 0; i < players.length; i++)
+			{
+				if (players[i].isUser)
+					userI = i;
+				
+				if (userI > -1 && i > userI)
+					if (players[i].action == Actions.RAISE)
+						count++;
+			}
+			
+			for (i = 0; i < userI; i++)
+				if (players[i].action == Actions.RAISE && players[i].oldAction)
+					count++;
+			
+			return count;
 		}
+		
+		static protected function numAvailablePlayers(players :Array) :int
+		{
+			var count :int = 0;
+			
+			for (var i :int = 0; i < players.length; i++)
+				if (players[i].action != Actions.FOLD)
+					count++;
+			
+			return count;
+		}
+		
+		
+		static protected function getNumRaisesBeforeUser(players :Array) :int
+		{
+			var count :int = 0;
+			
+			for (var i :int = 0; i < players.length; i++)
+			{
+				var player :PlayerVO = players[i] as PlayerVO;
+				
+				if (player.isUser)
+					return count;
+				
+				if (player.action == Actions.RAISE)
+					count++;
+			}
+			
+			return count;
+		}
+		
+		static protected function noActionBeforeUser(players :Array) :Boolean
+		{
+			var wasAction :Boolean = false;
+			
+			for (var i:int = 0; i < players.length; i++)
+			{
+				var player :PlayerVO = players[i] as PlayerVO;
+				
+				if (player.action == Actions.RAISE)
+					wasAction = true;
+				
+				if (player.isUser && !wasAction)
+					return true;
+			}
+			
+			return false;
+		}
+		
+		static protected function playerHasInitiative(actionsLog :Array, lastGamePhase :String) :Boolean
+		{
+			for (var i :int = actionsLog.length - 1; i >= 0; i--)
+			{
+				var log :ActionLogVO = actionsLog[i] as ActionLogVO;
+				
+				if (log.gamePhase == lastGamePhase)
+				{
+					if (log.name == Actions.RAISE)
+					{
+						if (log.player.isUser)
+							return true;
+						else
+							return false;
+					}
+				}
+			}
+			
+			return false;
+		}
+		
 	}
 }
